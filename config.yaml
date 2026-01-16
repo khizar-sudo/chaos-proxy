@@ -1,0 +1,2 @@
+listen: ":8080"
+upstream: ""

@@ -5,26 +5,36 @@ import (
 	"log"
 	"net/http"
 	"net/http/httputil"
-	"net/url"
+
+	"github.com/khizar-sudo/chaos-proxy/internal/config"
 )
 
 func main() {
-	upstream := "https://jsonplaceholder.typicode.com"
-	upstreamURL, err := url.Parse((upstream))
+	cfg, err := config.Load()
 	if err != nil {
-		log.Fatal("Invalid upstream URL:", err)
+		log.Fatal(err)
 	}
 
-	proxy := httputil.NewSingleHostReverseProxy(upstreamURL)
+	proxy := httputil.NewSingleHostReverseProxy(cfg.UpstreamURL)
+
+	// Customize the Director to properly set headers for the upstream request (problems with Cloudflare otherwise)
+	originalDirector := proxy.Director
+	proxy.Director = func(req *http.Request) {
+		originalDirector(req)
+		req.Host = cfg.UpstreamURL.Host
+		req.Header.Set("User-Agent", "chaos-proxy/1.0")
+		req.Header.Set("X-Forwarded-Host", req.Header.Get("Host"))
+	}
 
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		fmt.Printf("[PROXY] %s %s -> %s%s\n", r.Method, r.URL.Path, upstream, r.URL.Path)
+		fmt.Printf("[PROXY] %s %s\n", r.Method, r.URL.Path)
 		proxy.ServeHTTP(w, r)
 	})
 
-	addr := ":8080"
-	fmt.Printf("Starting chaos-proxy on %s\n", addr)
-	if err := http.ListenAndServe(addr, nil); err != nil {
+	fmt.Printf("Starting chaos-proxy on %s\n", cfg.Listen)
+	fmt.Printf("Proxying to: %s\n", cfg.UpstreamURL.String())
+
+	if err := http.ListenAndServe(cfg.Listen, nil); err != nil {
 		log.Fatal(err)
 	}
 }
