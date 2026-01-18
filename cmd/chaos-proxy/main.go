@@ -40,10 +40,14 @@ func main() {
 		req.Header.Set("X-Forwarded-Host", req.Header.Get("Host"))
 	}
 
-	handler := middleware.ChaosMiddleware(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		fmt.Printf("[PROXY] %s %s\n", r.Method, r.URL.Path)
-		proxy.ServeHTTP(w, r)
-	}), chaosEngine)
+	handler := middleware.ChaosMiddleware(
+		middleware.LoggingMiddleware(
+			http.HandlerFunc(
+				func(w http.ResponseWriter, r *http.Request) {
+					fmt.Printf("[PROXY] %s %s\n", r.Method, r.URL.Path)
+					proxy.ServeHTTP(w, r)
+				})),
+		chaosEngine)
 
 	fmt.Printf("Starting chaos-proxy on %s\n", cfg.Listen)
 	fmt.Printf("Proxying to: %s\n", cfg.UpstreamURL.String())
