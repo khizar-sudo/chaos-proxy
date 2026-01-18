@@ -5,8 +5,11 @@ import (
 	"log"
 	"net/http"
 	"net/http/httputil"
+	"time"
 
+	"github.com/khizar-sudo/chaos-proxy/internal/chaos"
 	"github.com/khizar-sudo/chaos-proxy/internal/config"
+	"github.com/khizar-sudo/chaos-proxy/internal/middleware"
 )
 
 func main() {
@@ -17,7 +20,17 @@ func main() {
 
 	proxy := httputil.NewSingleHostReverseProxy(cfg.UpstreamURL)
 
-	// Customize the Director to properly set headers for the upstream request (problems with Cloudflare otherwise)
+	chaosConfig := chaos.Config{
+		DropRate:   10,
+		ErrorRate:  20,
+		ErrorCode:  503,
+		LatencyMin: 100 * time.Millisecond,
+		LatencyMax: 1000 * time.Millisecond,
+	}
+
+	chaosEngine := chaos.NewEngine(chaosConfig)
+
+	// Customize the Director to properly set headers for the upstream request
 	originalDirector := proxy.Director
 	proxy.Director = func(req *http.Request) {
 		originalDirector(req)
@@ -26,15 +39,18 @@ func main() {
 		req.Header.Set("X-Forwarded-Host", req.Header.Get("Host"))
 	}
 
-	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+	handler := middleware.ChaosMiddleware(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		fmt.Printf("[PROXY] %s %s\n", r.Method, r.URL.Path)
 		proxy.ServeHTTP(w, r)
-	})
+	}), chaosEngine)
 
 	fmt.Printf("Starting chaos-proxy on %s\n", cfg.Listen)
 	fmt.Printf("Proxying to: %s\n", cfg.UpstreamURL.String())
+	fmt.Printf("Drop rate: %v%%\n", chaosConfig.DropRate)
+	fmt.Printf("Latency injection: %v-%vms\n", chaosConfig.LatencyMin, chaosConfig.LatencyMax)
+	fmt.Printf("Error injection: %v%% chance of %d\n", chaosConfig.ErrorRate, chaosConfig.ErrorCode)
 
-	if err := http.ListenAndServe(cfg.Listen, nil); err != nil {
+	if err := http.ListenAndServe(cfg.Listen, handler); err != nil {
 		log.Fatal(err)
 	}
 }
