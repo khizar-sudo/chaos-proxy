@@ -8,7 +8,7 @@ import (
 
 // TestDecide_Drop tests that drop behavior is exclusive and terminal
 func TestDecide_Drop(t *testing.T) {
-	engine := NewEngine(Config{
+	engine := NewEngine(ChaosConfig{
 		DropRate: 100, // Always drop
 
 		// These should be ignored when drop is triggered
@@ -38,7 +38,7 @@ func TestDecide_Drop(t *testing.T) {
 // TestDecide_NoChaosBehavior tests that no chaos is applied when rates are 0
 func TestDecide_NoChaosBehavior(t *testing.T) {
 	// Empty struct has all 0 values
-	engine := NewEngine(Config{})
+	engine := NewEngine(ChaosConfig{})
 
 	req, _ := http.NewRequest("GET", "http://example.com", nil)
 	decision := engine.Decide(req)
@@ -78,7 +78,7 @@ func TestDecide_ErrorOnly(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			engine := NewEngine(Config{
+			engine := NewEngine(ChaosConfig{
 				ErrorRate: 100,
 				ErrorCode: tt.errorCode,
 			})
@@ -102,7 +102,7 @@ func TestDecide_ErrorOnly(t *testing.T) {
 // TestDecide_FixedLatency tests fixed latency application
 func TestDecide_FixedLatency(t *testing.T) {
 	expectedLatency := 500 * time.Millisecond
-	engine := NewEngine(Config{
+	engine := NewEngine(ChaosConfig{
 		Latency: expectedLatency,
 	})
 
@@ -119,7 +119,7 @@ func TestDecide_RandomLatency(t *testing.T) {
 	minLatency := 100 * time.Millisecond
 	maxLatency := 500 * time.Millisecond
 
-	engine := NewEngine(Config{
+	engine := NewEngine(ChaosConfig{
 		LatencyMin: minLatency,
 		LatencyMax: maxLatency,
 	})
@@ -140,7 +140,7 @@ func TestDecide_RandomLatency(t *testing.T) {
 
 // TestDecide_CorruptOnly tests corruption behavior
 func TestDecide_CorruptOnly(t *testing.T) {
-	engine := NewEngine(Config{
+	engine := NewEngine(ChaosConfig{
 		CorruptRate: 100,
 	})
 
@@ -163,7 +163,7 @@ func TestDecide_ErrorWithLatency(t *testing.T) {
 	expectedLatency := 2 * time.Second
 	expectedErrorCode := 504
 
-	engine := NewEngine(Config{
+	engine := NewEngine(ChaosConfig{
 		ErrorRate: 100,
 		ErrorCode: expectedErrorCode,
 		Latency:   expectedLatency,
@@ -192,7 +192,7 @@ func TestDecide_ErrorWithLatency(t *testing.T) {
 // TestDecide_ErrorWithCorrupt tests combination of error and corruption
 func TestDecide_ErrorWithCorrupt(t *testing.T) {
 	errorCode := 503
-	engine := NewEngine(Config{
+	engine := NewEngine(ChaosConfig{
 		ErrorRate:   100,
 		ErrorCode:   errorCode,
 		CorruptRate: 100,
@@ -222,7 +222,7 @@ func TestDecide_ErrorWithCorrupt(t *testing.T) {
 func TestDecide_LatencyWithCorrupt(t *testing.T) {
 	expectedLatency := 1 * time.Second
 
-	engine := NewEngine(Config{
+	engine := NewEngine(ChaosConfig{
 		Latency:     expectedLatency,
 		CorruptRate: 100,
 	})
@@ -249,7 +249,7 @@ func TestDecide_AllCombined(t *testing.T) {
 	expectedLatency := 3 * time.Second
 	expectedErrorCode := 500
 
-	engine := NewEngine(Config{
+	engine := NewEngine(ChaosConfig{
 		ErrorRate:   100,
 		ErrorCode:   expectedErrorCode,
 		Latency:     expectedLatency,
@@ -316,7 +316,7 @@ func TestShouldApply_Rates(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			engine := NewEngine(Config{})
+			engine := NewEngine(ChaosConfig{})
 
 			if tt.exactMatch {
 				// For 0 and 100, test exact behavior
@@ -352,7 +352,7 @@ func TestShouldApply_Rates(t *testing.T) {
 func TestDecide_FixedLatencyTakesPrecedence(t *testing.T) {
 	fixedLatency := 1 * time.Second
 
-	engine := NewEngine(Config{
+	engine := NewEngine(ChaosConfig{
 		Latency:    fixedLatency,
 		LatencyMin: 100 * time.Millisecond,
 		LatencyMax: 200 * time.Millisecond,
