@@ -1,2 +1,19 @@
+# config.yaml
 listen: ":8080"
-upstream: ""
+upstream: "https://jsonplaceholder.typicode.com"
+
+# Chaos configuration
+chaos:
+  error_rate: 0
+  error_code: 503
+  drop_rate: 0
+
+  latency: "200ms"
+
+  # `latency_min` and `latency_max` will be ignored when `latency` is set to a non-zero value
+
+  # Plaease make sure that `latency_min` <= `latency_max`
+  # latency_min: "0ms"
+  # latency_max: "1000ms"
+
+  corrupt_rate: 0

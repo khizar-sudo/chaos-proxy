@@ -7,11 +7,11 @@ import (
 )
 
 type Engine struct {
-	config Config
+	config ChaosConfig
 	rnd    *rand.Rand
 }
 
-func NewEngine(cfg Config) *Engine {
+func NewEngine(cfg ChaosConfig) *Engine {
 	return &Engine{
 		config: cfg,
 		rnd:    rand.New(rand.NewSource(time.Now().UnixNano())),
@@ -38,7 +38,7 @@ func (e *Engine) Decide(r *http.Request) Decision {
 
 	if e.config.Latency > 0 {
 		decison.Latency = e.config.Latency
-	} else if e.config.LatencyMin > 0 && e.config.LatencyMax > 0 {
+	} else if e.config.LatencyMax >= e.config.LatencyMin && e.config.LatencyMax > 0 {
 		diff := e.config.LatencyMax - e.config.LatencyMin
 
 		// Note: Pls make sure that LatencyMax >= LatencyMin, otherwise this will panic

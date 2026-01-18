@@ -12,6 +12,9 @@ func ChaosMiddleware(next http.Handler, engine *chaos.Engine) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		decsion := engine.Decide(r)
 
+		fmt.Println()
+		defer fmt.Println()
+
 		// Drop request
 		if decsion.Drop {
 			fmt.Println("[CHAOS] Dropping request (no response)")

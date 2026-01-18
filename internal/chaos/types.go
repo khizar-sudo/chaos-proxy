@@ -12,7 +12,7 @@ type Decision struct {
 }
 
 // Values for each error which will give the decision
-type Config struct {
+type ChaosConfig struct {
 	ErrorRate   float64       //0-100 percentage
 	ErrorCode   int           // HTTP status code to return
 	DropRate    float64       //0-100 percentage
