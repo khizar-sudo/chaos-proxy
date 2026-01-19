@@ -72,24 +72,18 @@ Configuration changes are picked up automatically. Tweak your chaos parameters o
 
 ### Installation
 
-**Option 1: Install directly with go install**
-
-```bash
-go install github.com/khizar-sudo/chaos-proxy/cmd/chaos-proxy@latest
-```
-
-**Option 2: Clone and build from source**
-
 ```bash
 # Clone the repository
 git clone https://github.com/khizar-sudo/chaos-proxy.git
 cd chaos-proxy
 
+# Edit config.yaml with your upstream URL and chaos settings (see Configuration section below)
+
 # Build the binary
 go build -o chaos-proxy ./cmd/chaos-proxy
 
-# Or just run it directly
-go run ./cmd/chaos-proxy
+# Run it
+./chaos-proxy
 ```
 
 ## ⚙️ Configuration
