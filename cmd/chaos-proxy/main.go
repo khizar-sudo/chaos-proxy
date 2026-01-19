@@ -107,8 +107,9 @@ func startServer(cfg *config.Config) (*http.Server, error) {
 	handler = middleware.LoggingMiddleware(handler)
 
 	srv := &http.Server{
-		Addr:    cfg.Listen,
-		Handler: handler,
+		Addr:              cfg.Listen,
+		Handler:           handler,
+		ReadHeaderTimeout: 10 * time.Second,
 	}
 
 	go func() {

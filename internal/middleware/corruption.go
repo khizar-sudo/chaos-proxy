@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"math/rand"
+	"math/rand" // #nosec G404 - math/rand is sufficient for chaos testing, cryptographic randomness not required
 	"net/http"
 	"strings"
 )
@@ -35,7 +35,7 @@ func (cw *corruptingWriter) flush() {
 	body := cw.buf.Bytes()
 
 	// Randomly select corruption strategy
-	strategy := rand.Intn(4)
+	strategy := rand.Intn(4) // #nosec G404 - chaos testing doesn't need crypto rand
 	var corrupted []byte
 	var strategyName string
 
@@ -67,7 +67,9 @@ func (cw *corruptingWriter) flush() {
 	fmt.Printf("[CHAOS] Strategy: %s | %d bytes -> %d bytes\n", strategyName, len(body), len(corrupted))
 
 	cw.ResponseWriter.WriteHeader(cw.statusCode)
-	cw.ResponseWriter.Write(corrupted)
+	if _, err := cw.ResponseWriter.Write(corrupted); err != nil {
+		fmt.Printf("[CHAOS] Error writing corrupted response: %v\n", err)
+	}
 }
 
 // Strategy 1: Random Byte Corruption
@@ -80,15 +82,15 @@ func corruptRandomBytes(body []byte) []byte {
 	copy(corrupted, body)
 
 	// Corrupt 5-20% of bytes
-	corruptionRate := 0.05 + rand.Float64()*0.15
+	corruptionRate := 0.05 + rand.Float64()*0.15 // #nosec G404 - chaos testing doesn't need crypto rand
 	numCorruptions := int(float64(len(body)) * corruptionRate)
 	if numCorruptions == 0 && len(body) > 0 {
 		numCorruptions = 1
 	}
 
 	for i := 0; i < numCorruptions; i++ {
-		pos := rand.Intn(len(corrupted))
-		corrupted[pos] = byte(rand.Intn(256))
+		pos := rand.Intn(len(corrupted))      // #nosec G404 - chaos testing doesn't need crypto rand
+		corrupted[pos] = byte(rand.Intn(256)) // #nosec G404 - chaos testing doesn't need crypto rand
 	}
 
 	return corrupted
@@ -108,7 +110,7 @@ func corruptJSON(body []byte) []byte {
 	bodyStr := string(body)
 
 	// Choose a JSON corruption method
-	method := rand.Intn(5)
+	method := rand.Intn(5) // #nosec G404 - chaos testing doesn't need crypto rand
 	switch method {
 	case 0:
 		// Remove random closing bracket/brace

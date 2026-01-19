@@ -1,7 +1,7 @@
 package chaos
 
 import (
-	"math/rand"
+	"math/rand" // #nosec G404 - math/rand is sufficient for chaos testing, cryptographic randomness not required
 	"net/http"
 	"time"
 )
@@ -14,7 +14,7 @@ type Engine struct {
 func NewEngine(cfg ChaosConfig) *Engine {
 	return &Engine{
 		config: cfg,
-		rnd:    rand.New(rand.NewSource(time.Now().UnixNano())),
+		rnd:    rand.New(rand.NewSource(time.Now().UnixNano())), // #nosec G404 - chaos testing doesn't need crypto rand
 	}
 }
 
