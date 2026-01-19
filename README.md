@@ -1,6 +1,8 @@
 # Chaos Proxy
 
-> *"In chaos, there is opportunity... to find bugs before your users do."* - Some wise engineer, probably
+> *"Break production... before production breaks you"* - Some wise engineer, probably
+
+![Disaster Girl Meme](https://upload.wikimedia.org/wikipedia/en/1/11/Disaster_Girl.jpg)
 
 A delightfully devious reverse proxy that weaponizes Murphy's Law for your testing pleasure. Because why wait for production to break when you can break it yourself in style?
 
@@ -33,10 +35,6 @@ A delightfully devious reverse proxy that weaponizes Murphy's Law for your testi
 - [Acknowledgments](#acknowledgments)
 - [Further Reading](#further-reading)
 
-![Disaster Girl Meme](https://upload.wikimedia.org/wikipedia/en/1/11/Disaster_Girl.jpg)
-
-*Setting things on fire, one request at a time.*
-
 ## What Is This Madness?
 
 Chaos Proxy is a Go-based reverse proxy that deliberately sabotages your HTTP requests in creative and configurable ways. Because who doesn't love it when they're APIs break?
@@ -57,7 +55,7 @@ Add artificial delays to requests because apparently the internet isn't slow eno
 - **Random latency**: Variable delays within a range for that authentic "why is this so slow sometimes?" experience
 
 ### Response Corruption
-This is where things get interesting. Chaos Proxy will randomly corrupt your responses using one of four strategies:
+Chaos Proxy will randomly corrupt your responses using one of four strategies:
 
 1. **Random Byte Corruption**: Flips some bits and corrupts random bytes in the response
 2. **JSON Corruption**: Missing brackets, extra commas, colons replaced with equals signs.
@@ -187,7 +185,7 @@ You should see output like:
 
 ```
 ==============================================================================
-INFO starting server listen=:8080 upstream=https://jsonplaceholder.typicode.com
+INFO starting server listen=:8080 upstream=<your_server_url>
 Chaos configuration
 - Error rate: 10%
 - Error code: 503
@@ -204,10 +202,10 @@ Point your application at the proxy instead of the upstream service:
 
 ```bash
 # Direct request (boring)
-curl <your_cute_server_url_here>
+curl <your_boring_server_url_here>
 
 # Through chaos proxy (exciting!)
-curl http://localhost:8080/your-route
+curl http://localhost:<listen_port>/your-route
 ```
 
 ### Watching the Chaos
@@ -348,7 +346,7 @@ Found a bug? Want to add a new chaos strategy? Contributions are welcome.
 
 1. Fork the repository
 2. Create a feature branch (`git checkout -b feature/even-more-chaos`)
-3. Commit your changes (`git commit -m 'feat: add ability to corrupt responses'`)
+3. Commit your changes (`git commit -m 'feat: some chaos abc'`)
 4. Push to the branch (`git push origin feature/even-more-chaos`)
 5. Open a Pull Request
 
