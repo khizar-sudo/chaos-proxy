@@ -46,7 +46,7 @@ func run() error {
 	for {
 		srv, err := startServer(cfg)
 		if err != nil {
-			return nil
+			return err
 		}
 
 		select {
