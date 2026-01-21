@@ -1,0 +1,68 @@
+name: Build Binaries
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+  release:
+    types: [ created ]
+
+jobs:
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        include:
+          - goos: linux
+            goarch: amd64
+            output: chaos-proxy-linux-amd64
+          - goos: linux
+            goarch: arm64
+            output: chaos-proxy-linux-arm64
+          - goos: windows
+            goarch: amd64
+            output: chaos-proxy-windows-amd64.exe
+          - goos: darwin
+            goarch: amd64
+            output: chaos-proxy-darwin-amd64
+          - goos: darwin
+            goarch: arm64
+            output: chaos-proxy-darwin-arm64
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Go
+      uses: actions/setup-go@v6
+      with:
+        go-version-file: 'go.mod'
+
+    - name: Get dependencies
+      run: go mod download
+
+    - name: Run tests
+      run: go test -v ./...
+
+    - name: Build binary
+      env:
+        GOOS: ${{ matrix.goos }}
+        GOARCH: ${{ matrix.goarch }}
+        CGO_ENABLED: 0
+      run: |
+        go build -v -ldflags="-s -w" -o dist/${{ matrix.output }} ./cmd/chaos-proxy
+
+    - name: Upload artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: ${{ matrix.output }}
+        path: dist/${{ matrix.output }}
+        retention-days: 30
+
+    - name: Upload release asset
+      if: github.event_name == 'release'
+      uses: softprops/action-gh-release@v2
+      with:
+        files: dist/${{ matrix.output }}
